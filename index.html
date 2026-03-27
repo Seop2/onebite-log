@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ONE-BITE-LOG</title>
+    <meta property="og:title" content="한입 로그" />
+    <meta property="og:description" content="react sns by onebite" />
+    <meta property="og:image" content="/thumbnail.png" />
+    <script>
+      //브라우저가 HTML을 읽는 맨 처음
+      //다크모드 유지를 위해
+      //import 불가능
+      try {
+        const themeStore = localStorage.getItem("ThemeStore")
+          ? JSON.parse(localStorage.getItem("ThemeStore"))
+          : null;
+
+        const theme = themeStore.state.theme;
+
+        const htmlTag = document.documentElement; //최상위 html태그
+        htmlTag.classList.remove("dark", "light");
+
+        if (theme === "system") {
+          const isDarkTheme = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches; //브라우저 화면상태나 pc설정값을 가져오는  메서드 true면 다크
+
+          htmlTag.classList.add(isDarkTheme ? "dark" : "light");
+        } else {
+          htmlTag.classList.add(theme);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="modal-root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
