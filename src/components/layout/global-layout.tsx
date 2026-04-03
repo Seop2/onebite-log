@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router";
-import logo from "@/assets/logo.png";
+import chzzk from "@/assets/chzzk.png";
 import ProfileButton from "./header/profile-button";
 import ThemeButton from "./header/theme-button";
 
@@ -13,12 +13,8 @@ export default function GlobalLayout() {
       <header className="h-15 border-b">
         <div className="m-auto flex h-full w-full max-w-175 justify-between px-4">
           <Link to={"/"} className="flex items-center gap-2">
-            <img
-              className="h-5"
-              src={logo}
-              alt="한입 로그의 로고, 메세지 말풍선 형상화한 모습"
-            />
-            <div className="font-bold">한입 로그</div>
+            <img className="h-5" src={chzzk} alt="치지직 게시판" />
+            <div className="font-bold">치지직 스트리머 게시판</div>
           </Link>
           <div className="flex items-center gap-5">
             <ThemeButton />
@@ -31,7 +27,7 @@ export default function GlobalLayout() {
         <Outlet />
       </main>
       <footer className="text-muted-foreground border-t py-10 text-center">
-        @winterlood
+        lk9050@naver.com
       </footer>
     </div>
   );

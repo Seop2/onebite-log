@@ -108,27 +108,24 @@ export type Database = {
           content: string
           created_at: string
           id: number
-          img_urls: string[] | null
           like_count: number
-          video_urls: string[] | null
+          media_urls: string[] | null
         }
         Insert: {
           author_id?: string
           content: string
           created_at?: string
           id?: number
-          img_urls?: string[] | null
           like_count?: number
-          video_urls?: string[] | null
+          media_urls?: string[] | null
         }
         Update: {
           author_id?: string
           content?: string
           created_at?: string
           id?: number
-          img_urls?: string[] | null
           like_count?: number
-          video_urls?: string[] | null
+          media_urls?: string[] | null
         }
         Relationships: [
           {

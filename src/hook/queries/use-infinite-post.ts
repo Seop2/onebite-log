@@ -31,8 +31,8 @@ export function useInfinitePostData(authorId?: string) {
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < PAGE_SIZE) return undefined;
-      return allPages.length;
+      if (lastPage.length < PAGE_SIZE) return undefined; //마지막 페이지
+      return allPages.length; //디음 페이지 번호 설정
     },
 
     staleTime: Infinity,

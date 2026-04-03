@@ -92,7 +92,7 @@ export async function createPostWithImage({
     //3. 포스트 테이블 업데이트
     const updatedPost = await updatePost({
       id: post.id,
-      img_urls: imageUrls,
+      media_urls: imageUrls,
     });
     return updatedPost;
   } catch (error) {
@@ -221,7 +221,7 @@ export async function createPostWithMedia({
     //3. 포스트 테이블 업데이트
     const updatedPost = await updatePost({
       id: post.id,
-      img_urls: mediaUrls,
+      media_urls: mediaUrls,
     });
     return updatedPost;
   } catch (error) {

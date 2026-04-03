@@ -82,10 +82,10 @@ export default function PostItem({
         ) : (
           <div className="whitespace-pre-wrap">{post.content}</div>
         )}
-        {post.img_urls && post.img_urls.length > 0 && (
+        {post.media_urls && post.media_urls.length > 0 && (
           <Carousel>
             <CarouselContent>
-              {post.img_urls.map((url, index) => (
+              {post.media_urls.map((url, index) => (
                 <CarouselItem key={index} className="basis-3/5">
                   <div className="bg-muted flex aspect-video items-center justify-center overflow-hidden rounded-xl">
                     {isVideo(url) ? (

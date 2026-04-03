@@ -24,6 +24,7 @@ type ReplyMode = {
   rootCommentId: number;
   onClose: () => void;
 };
+
 type Props = CreateMode | EditMode | ReplyMode; //댓글 추가 | 댓글 수정 | 대댓글
 
 /**

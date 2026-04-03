@@ -13,7 +13,7 @@ export default function EditPostButton(props: PostEntity) {
     openEditPostModal({
       postId: props.id,
       content: props.content,
-      imageUrls: props.img_urls,
+      imageUrls: props.media_urls,
     });
   };
   return (

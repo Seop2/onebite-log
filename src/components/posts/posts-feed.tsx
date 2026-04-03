@@ -2,8 +2,9 @@ import Fallback from "../fallback";
 import Loader from "../loader";
 import PostItem from "./posts-item";
 import { useInView } from "react-intersection-observer";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useInfinitePostData } from "@/hook/queries/use-infinite-post";
+import { toast } from "sonner";
 
 /**
  * 포스트 피드 컴포넌트
@@ -11,15 +12,24 @@ import { useInfinitePostData } from "@/hook/queries/use-infinite-post";
  * @returns
  */
 export default function PostFeed({ authorId }: { authorId?: string }) {
-  const { data, error, isPending, fetchNextPage, isFetchingNextPage } =
-    useInfinitePostData(authorId);
+  const {
+    data,
+    error,
+    isPending,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useInfinitePostData(authorId);
   const { ref, inView } = useInView();
 
   useEffect(() => {
-    if (inView) {
-      fetchNextPage();
+    if (!inView) return;
+    if (hasNextPage) {
+      fetchNextPage(); //다음 페이지 요청
+    } else {
+      toast("마지막 게시글 입니다!");
     }
-  }, [inView]);
+  }, [inView, hasNextPage, fetchNextPage]);
 
   if (error) return <Fallback />;
   if (isPending) return <Loader />;
@@ -31,8 +41,9 @@ export default function PostFeed({ authorId }: { authorId?: string }) {
           <PostItem key={postId} postId={postId} type={"FEED"} />
         )),
       )}
+      {/* 다음 페이지를 불러오는 중인지 판별 isFetchingNextPage*/}
       {isFetchingNextPage && <Loader />}
-      {/*무한스크롤 감지 (intersection observer)*/}
+      {/*무한스크롤 감지하는 ref (intersection observer)*/}
       <div ref={ref}></div>
     </div>
   );

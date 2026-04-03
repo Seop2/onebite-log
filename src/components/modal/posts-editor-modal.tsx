@@ -122,7 +122,7 @@ export default function PostEditorModal() {
       updatePost({
         id: postEditorModal.postId,
         content: content,
-        img_urls: postEditorModal.imageUrls,
+        media_urls: postEditorModal.imageUrls,
       });
     }
   };
