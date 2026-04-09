@@ -105,6 +105,8 @@ export type Database = {
       post: {
         Row: {
           author_id: string
+          channel_id: string | null
+          channel_name: string | null
           content: string
           created_at: string
           id: number
@@ -113,6 +115,8 @@ export type Database = {
         }
         Insert: {
           author_id?: string
+          channel_id?: string | null
+          channel_name?: string | null
           content: string
           created_at?: string
           id?: number
@@ -121,6 +125,8 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          channel_id?: string | null
+          channel_name?: string | null
           content?: string
           created_at?: string
           id?: number

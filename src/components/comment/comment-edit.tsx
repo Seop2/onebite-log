@@ -1,9 +1,9 @@
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useState } from "react";
-import { useCreateComment } from "@/hook/mutations/comment/use-create-comment";
+import { useCreateComment } from "@/hooks/mutations/comment/use-create-comment";
 import { toast } from "sonner";
-import { useUpdateComment } from "@/hook/mutations/comment/use-update-comment";
+import { useUpdateComment } from "@/hooks/mutations/comment/use-update-comment";
 
 type CreateMode = {
   type: "CREATE";

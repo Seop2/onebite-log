@@ -1,4 +1,4 @@
-import { useProfileData } from "@/hook/queries/use-profile-data";
+import { useProfileData } from "@/hooks/queries/use-profile-data";
 import { useSession } from "@/store/session";
 import Fallback from "../fallback";
 import Loader from "../loader";
@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { useProfileEditorModal } from "@/store/profile-edit-modal";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { useUpdateProfile } from "@/hook/mutations/profile/use-update-profile";
+import { useUpdateProfile } from "@/hooks/mutations/profile/use-update-profile";
 import { toast } from "sonner";
 
 type Image = { file: File; previewUrl: string };

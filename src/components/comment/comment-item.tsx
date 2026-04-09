@@ -5,7 +5,7 @@ import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useState } from "react";
 import CommentEditor from "./comment-edit";
-import { useDeleteComment } from "@/hook/mutations/comment/use-delete-comment";
+import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
 import { useOpenAlertModal } from "@/store/alert-modal";
 

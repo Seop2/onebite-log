@@ -1,5 +1,5 @@
-import CreatePostButton from "@/components/posts/create-posts-button";
-import PostFeed from "../components/posts/posts-feed";
+import CreatePostButton from "@/components/posts/create-post-button";
+import PostFeed from "../components/posts/post-feed";
 
 /**
  * 기본 페이지

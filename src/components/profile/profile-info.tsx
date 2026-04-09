@@ -1,4 +1,4 @@
-import { useProfileData } from "@/hook/queries/use-profile-data";
+import { useProfileData } from "@/hooks/queries/use-profile-data";
 import Fallback from "../fallback";
 import Loader from "../loader";
 import defaultAvatar from "@/assets/default-avatar.png";

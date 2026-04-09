@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -58,3 +58,9 @@ export const getRandomNickname = () => {
 
   return `${adjective}${noun}${number}`;
 };
+
+export function formatViewerCount(count: number): string {
+  if (count >= 10000) return `${(count / 10000).toFixed(1)}만`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}천`;
+  return String(count);
+}

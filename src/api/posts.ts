@@ -40,15 +40,28 @@ export async function fetchPosts({
 }
 
 /**
- * 포스트 생성
- * @param content
- * @returns
+ * 포스트 생성 (작성자 정보 포함)
+ * @param content 게시글 내용
+ * @param userId 작성자 고유 ID
  */
-export async function createPost(content: string) {
+export async function createPost({
+  content,
+  userId,
+  channelId,
+  channelName,
+}: {
+  content: string;
+  userId: string;
+  channelId?: string;
+  channelName?: string;
+}) {
   const { data, error } = await supabase
     .from("post")
     .insert({
       content,
+      author_id: userId, // DB 컬럼명에 맞춰 수정 (author_id 또는 user_id)
+      channel_id: channelId,
+      channel_name: channelName,
     })
     .select()
     .single();
@@ -56,52 +69,6 @@ export async function createPost(content: string) {
   if (error) throw error;
   return data;
 }
-
-/**
- * 이미지 포함한 포스트 생성
- * @param param0
- * @returns
- */
-export async function createPostWithImage({
-  content,
-  images,
-  userId,
-}: {
-  content: string;
-  images: File[];
-  userId: string;
-}) {
-  //1. 새로운 포스트 생성
-  const post = await createPost(content);
-  if (images.length === 0) return post;
-
-  try {
-    //2. 이미지 업로드
-    //이미지 병렬
-    const imageUrls = await Promise.all(
-      images.map((image) => {
-        const fileExtension = image.name.split(".").pop() || "webp";
-        const filename = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
-        const filePath = `${userId}/${post.id}/${filename}`;
-        return uploadImage({
-          file: image,
-          filePath,
-        });
-      }),
-    );
-    //3. 포스트 테이블 업데이트
-    const updatedPost = await updatePost({
-      id: post.id,
-      media_urls: imageUrls,
-    });
-    return updatedPost;
-  } catch (error) {
-    //업로드 실패시 해당 포스트 삭제
-    await deletePost(post.id);
-    throw error;
-  }
-}
-
 /**
  * 포스트 수정
  * @param post
@@ -180,6 +147,7 @@ export async function togglePostLike({
 
 /**
  * 첨부파일 포함한 포스트 생성하기
+ * 스트리머 채널 해시태그 기능 추가
  * @param param0
  * @returns
  */
@@ -187,14 +155,24 @@ export async function createPostWithMedia({
   content,
   files,
   userId,
+  channelId,
+  channelName,
 }: {
   content: string;
   files?: File[];
   userId: string;
+  channelId?: string;
+  channelName?: string;
 }) {
   //1. 새로운 포스트 생성
-  const post = await createPost(content);
+  const post = await createPost({
+    content,
+    userId,
+    channelId,
+    channelName,
+  });
   if (files?.length === 0) return post;
+
   try {
     //첨부파일 등록
     const mediaUrls = await Promise.all(
@@ -203,7 +181,8 @@ export async function createPostWithMedia({
         const originalExtension = file.name.split(".").pop();
         const fileExtension = originalExtension || (isVideo ? "mp4" : "webp");
         //파일 중복 방지
-        const fileName = `${Date.now()} - ${crypto.randomUUID()}.${fileExtension}`;
+        const fileName =
+          `${Date.now()} - ${crypto.randomUUID()}.${fileExtension}`;
         const filePath = `${userId}/${post.id}/${fileName}`;
 
         //용량 체크

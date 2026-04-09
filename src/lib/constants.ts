@@ -15,6 +15,11 @@ export const QUERY_KEYS = {
     post: (postId: number) => ["comment", "post", postId],
     count: (postId: number) => ["comment", "count", postId],
   },
+  chzzk: {
+    all: ["chzzk"],
+    channel: (channelId: string) => ["chzzk", "channel", channelId],
+    search: (keyword: string) => ["chzzk", "search", keyword],
+  },
 };
 
 export const BUCKET_NAME = "uploads";

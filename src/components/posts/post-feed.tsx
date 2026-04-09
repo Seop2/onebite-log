@@ -1,9 +1,9 @@
 import Fallback from "../fallback";
 import Loader from "../loader";
-import PostItem from "./posts-item";
+import PostItem from "./post-item";
 import { useInView } from "react-intersection-observer";
 import { useEffect, useRef } from "react";
-import { useInfinitePostData } from "@/hook/queries/use-infinite-post";
+import { useInfinitePostData } from "@/hooks/queries/use-infinite-post";
 import { toast } from "sonner";
 
 /**
@@ -21,13 +21,19 @@ export default function PostFeed({ authorId }: { authorId?: string }) {
     hasNextPage,
   } = useInfinitePostData(authorId);
   const { ref, inView } = useInView();
-
+  const endToastShownRef = useRef(false);
   useEffect(() => {
     if (!inView) return;
+
     if (hasNextPage) {
+      endToastShownRef.current = false;
       fetchNextPage(); //다음 페이지 요청
-    } else {
+      return;
+    }
+    //마지막 페이지에 한번만 toast띠움
+    if (!endToastShownRef.current) {
       toast("마지막 게시글 입니다!");
+      endToastShownRef.current = true;
     }
   }, [inView, hasNextPage, fetchNextPage]);
 

@@ -1,16 +1,20 @@
-import { ImageIcon, Video, XIcon } from "lucide-react";
+import { ImageIcon, Radio, Search, Video, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Textarea } from "../ui/textarea";
 import { usePostEditorModal } from "@/store/post-editor-modal";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import useCreatePost from "@/hook/mutations/posts/use-create-posts";
+import useCreatePost from "@/hooks/mutations/posts/use-create-posts";
 import { toast } from "sonner";
 import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
 import { useSession } from "@/store/session";
 import { useOpenAlertModal } from "@/store/alert-modal";
-import useUpdatePost from "@/hook/mutations/posts/use-update-posts";
+import useUpdatePost from "@/hooks/mutations/posts/use-update-posts";
 import { Input } from "@/components/ui/input";
+import { useChzzkSearch } from "@/hooks/queries/use-posts-channels-data";
+import type { ChzzkChannel } from "@/api/chzzk";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 
 type MediaFile = {
   file: File;
@@ -27,7 +31,12 @@ export default function PostEditorModal() {
   const postEditorModal = usePostEditorModal();
   const [content, setContent] = useState("");
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-
+  const [existingMediaUrls, setExistingMediaUrls] = useState<string[]>([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const [selectedChannel, setSelectedChannel] = useState<ChzzkChannel | null>(
+    null,
+  );
   //포스트 생성 함수 호출
   const { mutate: createPost, isPending: isCreatePostPending } = useCreatePost({
     onSuccess: () => {
@@ -52,9 +61,19 @@ export default function PostEditorModal() {
     },
   });
 
+  const {
+    data: channels,
+    isPending: postChannelIsPending,
+    isError,
+  } = useChzzkSearch(keyword);
+
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  //const isMedia =
+
+  const isVideo = (url: string) => {
+    const videoExtension = [".mp4", ".webm", ".mov"];
+    return videoExtension.some((ext) => url.toLowerCase().endsWith(ext));
+  };
 
   //자동 높이 조절
   useEffect(() => {
@@ -68,6 +87,8 @@ export default function PostEditorModal() {
   useEffect(() => {
     if (!postEditorModal.isOpen) {
       mediaFiles.forEach((m) => URL.revokeObjectURL(m.previewUrl));
+      setSelectedChannel(null); // 모달 닫힐 때 선택 채널 초기화
+      setKeyword("");
       return;
     }
     //포스트 추가시 모달
@@ -75,9 +96,13 @@ export default function PostEditorModal() {
       setContent("");
       setMediaFiles([]);
     } //수정시
-    else {
+    else if (postEditorModal.type === "EDIT") {
       setContent(postEditorModal.content);
+      setExistingMediaUrls(postEditorModal.mediaUrls || []);
+    } else {
+      setContent("");
       setMediaFiles([]);
+      setExistingMediaUrls([]);
     }
     textAreaRef.current?.focus();
   }, [postEditorModal.isOpen]);
@@ -108,7 +133,6 @@ export default function PostEditorModal() {
    * @returns
    */
   const handleSavePostClick = () => {
-    //입력값 검증
     if (content.trim() === "" || !postEditorModal.isOpen) return;
 
     if (postEditorModal.type === "CREATE") {
@@ -116,13 +140,22 @@ export default function PostEditorModal() {
         content,
         files: mediaFiles?.map((m) => m.file),
         userId: session!.user.id,
+        channelId: selectedChannel?.channelId,
+        channelName: selectedChannel?.channelName,
       });
     } else if (postEditorModal.type === "EDIT") {
-      if (content === postEditorModal.content) return;
+      const isContentSame = content === postEditorModal.content;
+      const isMediaSame =
+        JSON.stringify(existingMediaUrls) ===
+        JSON.stringify(postEditorModal.mediaUrls);
+
+      if (isContentSame && isMediaSame && mediaFiles.length === 0) return;
+
+      //수정함수 호출
       updatePost({
         id: postEditorModal.postId,
         content: content,
-        media_urls: postEditorModal.imageUrls,
+        media_urls: existingMediaUrls,
       });
     }
   };
@@ -140,6 +173,7 @@ export default function PostEditorModal() {
     e.target.value = ""; //동일 파일 재선택 가능
   };
 
+  //삭제
   const handleDeleteMedia = (media: MediaFile) => {
     setMediaFiles((prevMedia) =>
       prevMedia.filter((item) => item.previewUrl !== media.previewUrl),
@@ -154,6 +188,30 @@ export default function PostEditorModal() {
     <Dialog open={postEditorModal.isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="max-h-[90vh]">
         <DialogTitle>포스트 작성</DialogTitle>
+        {selectedChannel && (
+          <div className="animate-in fade-in slide-in-from-top-1 flex items-center">
+            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+              <span className="text-primary">@</span>
+              {selectedChannel.channelName}
+              <button>
+                <XIcon
+                  className="hover:text-destructive h-3 w-3 cursor-pointer"
+                  onClick={() => setSelectedChannel(null)}
+                />
+              </button>
+            </Badge>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button
+            className="h-4 w-6 cursor-pointer px-6 py-4"
+            onClick={handleSavePostClick}
+            disabled={isPending}
+            variant={"destructive"}
+          >
+            저장
+          </Button>
+        </div>
         <Textarea
           disabled={isPending}
           ref={textAreaRef}
@@ -174,13 +232,23 @@ export default function PostEditorModal() {
         {postEditorModal.isOpen && postEditorModal.type === "EDIT" && (
           <Carousel>
             <CarouselContent>
-              {postEditorModal.imageUrls?.map((url) => (
-                <CarouselItem className="basis-2/5" key={url}>
-                  <div className="relative">
-                    <img
-                      src={url}
-                      className="h-full w-full rounded-sm object-cover"
-                    />
+              {existingMediaUrls.map((url) => (
+                <CarouselItem className="basis-1/2 md:basis-1/3" key={url}>
+                  <div className="relative aspect-square">
+                    {isVideo(url) ? (
+                      <video
+                        src={url}
+                        muted
+                        loop
+                        playsInline
+                        className="h-full w-full rounded-sm object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={url}
+                        className="h-full w-full rounded-sm object-cover"
+                      />
+                    )}
                   </div>
                 </CarouselItem>
               ))}
@@ -225,28 +293,83 @@ export default function PostEditorModal() {
 
         {postEditorModal.isOpen && postEditorModal.type === "CREATE" && (
           <>
-            <Button
-              onClick={() => {
-                fileInputRef.current?.click();
-              }}
-              variant={"outline"}
-              className="cursor-pointer"
-              disabled={isPending}
-            >
-              <ImageIcon className="h-4 w-4" />
-              <Video className="h-4 w-4" />
-              첨부파일 추가
-            </Button>
+            <div className="flex justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSearch(!showSearch)}
+                className="cursor-pointer"
+              >
+                <Search className="h-4 w-4" />
+                스트리머 태그
+              </Button>
+              <Button
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                variant={"outline"}
+                className="cursor-pointer"
+                disabled={isPending}
+              >
+                <ImageIcon className="h-4 w-4" />
+                <Video className="h-4 w-4" />
+                첨부파일 추가
+              </Button>
+            </div>
+
+            {showSearch && (
+              <>
+                <Input
+                  placeholder="스트리머 검색"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+                {postChannelIsPending && <p>검색 중...</p>}
+                {isError && <p>검색에 실패했습니다.</p>}
+                {channels?.map((item) => (
+                  <button
+                    key={item.channelId}
+                    type="button"
+                    onClick={() => setSelectedChannel(item)}
+                    className="hover:bg-card flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors"
+                  >
+                    <Avatar className="border-border h-8 w-8 border">
+                      {item.channelImageUrl ? (
+                        <img
+                          src={item.channelImageUrl || "/placeholder.svg"}
+                          alt={item.channelName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                          {item.channelName.slice(0, 2)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground font-medium">
+                          {item.channelName}
+                        </span>
+                        {item.isLive && (
+                          <span className="flex items-center gap-1 rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-500">
+                            <Radio className="h-2.5 w-2.5 animate-pulse" />
+                            LIVE
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-muted-foreground text-xs">
+                        시청자수{" "}
+                        {(item.concurrentUserCount ?? 0).toLocaleString()}명
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </>
+            )}
           </>
         )}
-
-        <Button
-          className="cursor-pointer"
-          onClick={handleSavePostClick}
-          disabled={isPending}
-        >
-          저장
-        </Button>
       </DialogContent>
     </Dialog>
   );

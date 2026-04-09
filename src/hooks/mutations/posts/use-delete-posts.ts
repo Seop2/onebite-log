@@ -16,7 +16,7 @@ export default function useDeletePost(callbacks?: useMutationCallback) {
     mutationFn: deletePost,
     onSuccess: async (deletedPost) => {
       if (callbacks?.onSuccess) callbacks.onSuccess();
-      //이미지 삭제
+
       if (deletedPost.media_urls && deletedPost.media_urls.length > 0) {
         await deleteImagesInPath(`${deletedPost.author_id}/${deletedPost.id}`);
       }

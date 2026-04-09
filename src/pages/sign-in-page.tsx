@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSignInWithPassword } from "@/hook/mutations/auth/use-sign-in-password";
+import { useSignInWithPassword } from "@/hooks/mutations/auth/use-sign-in-password";
 import { useState } from "react";
 import { Link } from "react-router";
 import githublogo from "@/assets/github-mark.svg";
 import googleLog from "@/assets/google-logo.png";
 import { toast } from "sonner";
 import { generateErrorMessage } from "@/lib/error";
-import { useSignInWithOAuth } from "@/hook/mutations/auth/use-sign-in-with-Oauth";
+import { useSignInWithOAuth } from "@/hooks/mutations/auth/use-sign-in-with-Oauth";
 
 /**
  * 로그인 페이지

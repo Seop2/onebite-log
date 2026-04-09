@@ -11,16 +11,16 @@ type EditMode = {
   type: "EDIT";
   postId: number;
   content: string;
-  imageUrls: string[] | null;
+  mediaUrls: string[] | null;
 };
 
 type CloseState = {
   isOpen: false;
 };
 
-type OpenState = CreateMode | EditMode; //유니온 타입
+type OpenState = CreateMode | EditMode;
 
-type State = CloseState | OpenState; //유니온 타입
+type State = CloseState | OpenState;
 
 const initialState = {
   isOpen: false,

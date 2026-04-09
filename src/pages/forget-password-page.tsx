@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useRequestPasswordResetEmail } from "../hook/mutations/auth/use-request-reset-email";
+import { useRequestPasswordResetEmail } from "../hooks/mutations/auth/use-request-reset-email";
 import { toast } from "sonner";
 import { generateErrorMessage } from "@/lib/error";
 

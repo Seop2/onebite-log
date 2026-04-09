@@ -14,7 +14,7 @@ export default function useUpdatePost(callbacks?: useMutationCallback) {
     mutationFn: updatePost,
     onSuccess: (updatedPost) => {
       if (callbacks?.onSuccess) callbacks.onSuccess();
-      //수정시 새로고침없이 바로 화면에 렌더링됨.
+
       queryClient.setQueryData<Post>(
         QUERY_KEYS.post.byId(updatedPost.id),
         (prevPost) => {

@@ -1,6 +1,6 @@
 import { useOpenAlertModal } from "@/store/alert-modal";
 import { Button } from "../ui/button";
-import useDeletePost from "@/hook/mutations/posts/use-delete-posts";
+import useDeletePost from "@/hooks/mutations/posts/use-delete-posts";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 

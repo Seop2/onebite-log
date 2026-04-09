@@ -1,4 +1,4 @@
-import useTogglePostLike from "@/hook/mutations/posts/use-toggle-likes-posts";
+import useTogglePostLike from "@/hooks/mutations/posts/use-toggle-likes-posts";
 import { useSession } from "@/store/session";
 import { HeartIcon } from "lucide-react";
 import { toast } from "sonner";

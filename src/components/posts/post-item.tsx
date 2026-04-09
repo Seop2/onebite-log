@@ -1,45 +1,42 @@
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
 import { MessageCircle } from "lucide-react";
 import defaultAvatar from "@/assets/default-avatar.png";
 import { formatTimeAgo } from "@/lib/time";
-import DeletePostButton from "./delete-posts-button";
-import EditPostButton from "./edit-posts-button";
+import DeletePostButton from "./delete-post-button";
+import EditPostButton from "./edit-post-button";
 import { useSession } from "@/store/session";
-import { usePostByIdData } from "@/hook/queries/use-posts-byId";
+import { usePostByIdData } from "@/hooks/queries/use-posts-byId";
 import Loader from "../loader";
 import Fallback from "../fallback";
-import LikePostButton from "./like-posts-button";
+import LikePostButton from "./like-post-button";
 import { Link } from "react-router";
-import { useCommentCountData } from "@/hook/queries/use-comment-count-data";
+import { useCommentCountData } from "@/hooks/queries/use-comment-count-data";
+import { useChannelLive } from "@/hooks/queries/use-posts-channel-live";
+import PostMediaCarousel from "./post-media-carousel";
+import PostChannelTag from "./post-channel-tag";
 
-//댓글 수 세기...
-
-export default function PostItem({
-  postId,
-  type,
-}: {
+interface PostItemProps {
   postId: number;
   type: "FEED" | "DETAIL";
-}) {
+}
+
+export default function PostItem({ postId, type }: PostItemProps) {
   const session = useSession();
   const userId = session?.user.id;
-  //캐시 데이터 정규화
+
+  //데이터 패칭
   const { data: post, isPending, error } = usePostByIdData({ postId, type });
-  const {
-    data: commentCount,
-    isPending: isCommentCountPending,
-    error: commentError,
-  } = useCommentCountData(postId);
+  const { data: commentCount } = useCommentCountData(postId);
+  const { data: channelLive } = useChannelLive(
+    post?.channel_id ? String(post.channel_id) : "",
+  );
 
   if (isPending) return <Loader />;
-  if (error) return <Fallback />;
+  if (error || !post) return <Fallback />;
 
+  const liveInfo = channelLive?.content ?? channelLive;
+  const isLive = liveInfo?.status?.toUpperCase() === "OPEN";
   const isMine = post.author_id === userId;
-
-  const isVideo = (url: string) => {
-    const videoExtension = [".mp4", ".webm", ".mov", "webp"];
-    return videoExtension.some((ext) => url.toLowerCase().endsWith(ext));
-  };
+  const viewerCount = liveInfo?.concurrentUserCount?.toLocaleString() ?? "0";
 
   return (
     <div
@@ -55,9 +52,7 @@ export default function PostItem({
             />
           </Link>
           <div>
-            <div className="hover font-bold:under-line">
-              {post.author.nickname}
-            </div>
+            <div className="font-bold">{post.author.nickname}</div>
             <div className="text-muted-foreground text-sm">
               {formatTimeAgo(post.created_at)}
             </div>
@@ -82,33 +77,17 @@ export default function PostItem({
         ) : (
           <div className="whitespace-pre-wrap">{post.content}</div>
         )}
+
+        {post.channel_id && post.channel_name && (
+          <PostChannelTag
+            channelId={post.channel_id}
+            channelName={post.channel_name}
+            isLive={isLive}
+            viewerCount={viewerCount}
+          />
+        )}
         {post.media_urls && post.media_urls.length > 0 && (
-          <Carousel>
-            <CarouselContent>
-              {post.media_urls.map((url, index) => (
-                <CarouselItem key={index} className="basis-3/5">
-                  <div className="bg-muted flex aspect-video items-center justify-center overflow-hidden rounded-xl">
-                    {isVideo(url) ? (
-                      <video
-                        src={url}
-                        controls={type === "DETAIL"} // 상세 페이지에서만 컨트롤러 표시
-                        autoPlay={type === "FEED"} // 피드에서는 자동 재생(선택 사항)
-                        muted
-                        loop
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={url}
-                        alt="Post media"
-                        className="h-full max-h-[350px] w-full object-cover"
-                      />
-                    )}
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+          <PostMediaCarousel mediaUrls={post.media_urls} type={type} />
         )}
       </div>
       <div className="flex gap-2">

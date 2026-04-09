@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useIsSessionLoaded, useSession, useSetSession } from "@/store/session";
 import supabase from "@/lib/supabase";
 import GlobalLoader from "@/components/global-loader";
-import { useProfileData } from "@/hook/queries/use-profile-data";
+import { useProfileData } from "@/hooks/queries/use-profile-data";
 
 /**
  * 세션 관리 부모 컴포넌트

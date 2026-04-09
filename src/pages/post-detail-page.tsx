@@ -1,6 +1,6 @@
 import CommentEditor from "@/components/comment/comment-edit";
 import CommentList from "@/components/comment/comment-list";
-import PostItem from "@/components/posts/posts-item";
+import PostItem from "@/components/posts/post-item";
 import { Navigate, useParams } from "react-router";
 
 /**

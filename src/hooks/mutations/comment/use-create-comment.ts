@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Comment, useMutationCallback } from "@/types";
 import { QUERY_KEYS } from "@/lib/constants";
 import { useSession } from "@/store/session";
-import { useProfileData } from "@/hook/queries/use-profile-data";
+import { useProfileData } from "@/hooks/queries/use-profile-data";
 
 /**
  * 댓글 생성
@@ -22,8 +22,9 @@ export function useCreateComment(callbacks?: useMutationCallback) {
       queryClient.setQueryData<Comment[]>(
         QUERY_KEYS.comment.post(newComment.post_id),
         (comments) => {
-          if (!comments)
+          if (!comments) {
             throw new Error("댓글에 캐시 데이터에 보관되어 있지 않습니다.");
+          }
           if (!profile) throw Error("사용자의 프로필 정보를 찾을 수 없습니다.");
           return [...comments, { ...newComment, author: profile }];
         },

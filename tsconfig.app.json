@@ -23,8 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    /* 템플릿 코드에 추가된 부분 : Path Alias */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -3,7 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useProfileData } from "@/hook/queries/use-profile-data";
+import { useProfileData } from "@/hooks/queries/use-profile-data";
 import { useSession } from "@/store/session";
 import defaultAvatar from "@/assets/default-avatar.png";
 import { PopoverClose } from "@radix-ui/react-popover";
