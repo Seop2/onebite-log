@@ -10,7 +10,8 @@ export default function CreatePostButton() {
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className="bg-muted text-muted-foreground cursor-pointer rounded-xl px-6 py-4"
         onClick={openCreatePostModal}
       >
@@ -18,7 +19,7 @@ export default function CreatePostButton() {
           <div>나누고 싶은 이야기를 입력해주세요~</div>
           <PlusCircleIcon className="h-5 w-5" />
         </div>
-      </div>
+      </button>
     </>
   );
 }

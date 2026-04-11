@@ -31,12 +31,12 @@ export default function PostEditorModal() {
   const postEditorModal = usePostEditorModal();
   const [content, setContent] = useState("");
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-  const [existingMediaUrls, setExistingMediaUrls] = useState<string[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [selectedChannel, setSelectedChannel] = useState<ChzzkChannel | null>(
     null,
   );
+
   //포스트 생성 함수 호출
   const { mutate: createPost, isPending: isCreatePostPending } = useCreatePost({
     onSuccess: () => {
@@ -70,10 +70,10 @@ export default function PostEditorModal() {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isVideo = (url: string) => {
-    const videoExtension = [".mp4", ".webm", ".mov"];
-    return videoExtension.some((ext) => url.toLowerCase().endsWith(ext));
-  };
+  const isOpen = postEditorModal.isOpen;
+  const modalType = isOpen ? postEditorModal.type : null;
+  const isEditMode = modalType === "EDIT";
+  const isCreateMode = modalType === "CREATE";
 
   //자동 높이 조절
   useEffect(() => {
@@ -85,27 +85,26 @@ export default function PostEditorModal() {
   }, [content]);
 
   useEffect(() => {
-    if (!postEditorModal.isOpen) {
+    if (!isOpen) {
       mediaFiles.forEach((m) => URL.revokeObjectURL(m.previewUrl));
       setSelectedChannel(null); // 모달 닫힐 때 선택 채널 초기화
       setKeyword("");
+      setShowSearch(false);
       return;
     }
     //포스트 추가시 모달
-    if (postEditorModal.type === "CREATE") {
+    if (isCreateMode) {
       setContent("");
       setMediaFiles([]);
-    } //수정시
+    }
+    //텍스트 수정만 가능
     else if (postEditorModal.type === "EDIT") {
       setContent(postEditorModal.content);
-      setExistingMediaUrls(postEditorModal.mediaUrls || []);
     } else {
       setContent("");
       setMediaFiles([]);
-      setExistingMediaUrls([]);
     }
-    textAreaRef.current?.focus();
-  }, [postEditorModal.isOpen]);
+  }, [isOpen]);
 
   /**
    * 모달 작성중 삭제 이벤트
@@ -133,29 +132,25 @@ export default function PostEditorModal() {
    * @returns
    */
   const handleSavePostClick = () => {
-    if (content.trim() === "" || !postEditorModal.isOpen) return;
+    if (content.trim() === "" || !isOpen) return;
+    if (!session?.user?.id) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
 
-    if (postEditorModal.type === "CREATE") {
+    if (isCreateMode) {
       createPost({
         content,
         files: mediaFiles?.map((m) => m.file),
-        userId: session!.user.id,
+        userId: session.user.id,
         channelId: selectedChannel?.channelId,
         channelName: selectedChannel?.channelName,
       });
     } else if (postEditorModal.type === "EDIT") {
-      const isContentSame = content === postEditorModal.content;
-      const isMediaSame =
-        JSON.stringify(existingMediaUrls) ===
-        JSON.stringify(postEditorModal.mediaUrls);
-
-      if (isContentSame && isMediaSame && mediaFiles.length === 0) return;
-
       //수정함수 호출
       updatePost({
         id: postEditorModal.postId,
         content: content,
-        media_urls: existingMediaUrls,
       });
     }
   };
@@ -178,31 +173,45 @@ export default function PostEditorModal() {
     setMediaFiles((prevMedia) =>
       prevMedia.filter((item) => item.previewUrl !== media.previewUrl),
     );
-
     URL.revokeObjectURL(media.previewUrl);
   };
 
   const isPending = isCreatePostPending || isUpdatePostPending;
 
   return (
-    <Dialog open={postEditorModal.isOpen} onOpenChange={handleCloseModal}>
-      <DialogContent className="max-h-[90vh]">
-        <DialogTitle>포스트 작성</DialogTitle>
-        {selectedChannel && (
-          <div className="animate-in fade-in slide-in-from-top-1 flex items-center">
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-              <span className="text-primary">@</span>
-              {selectedChannel.channelName}
-              <button>
-                <XIcon
-                  className="hover:text-destructive h-3 w-3 cursor-pointer"
-                  onClick={() => setSelectedChannel(null)}
-                />
-              </button>
-            </Badge>
-          </div>
-        )}
-        <div className="flex justify-end">
+    <Dialog open={isOpen} onOpenChange={handleCloseModal}>
+      <DialogContent
+        className="max-h-[90vh]"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          const textarea = textAreaRef.current;
+          if (!textarea) return;
+          textarea.focus();
+
+          if (isEditMode) {
+            const end = textarea.value.length;
+            textarea.setSelectionRange(end, end);
+          }
+        }}
+      >
+        <DialogTitle>포스트 {isCreateMode ? "작성" : "수정"}</DialogTitle>
+        <div className="flex justify-between">
+          {isEditMode && (
+            <div className="text-muted-foreground">
+              수정은 텍스트만 수정 가능합니다.
+            </div>
+          )}
+          {selectedChannel && (
+            <div className="animate-in fade-in slide-in-from-top-1 flex items-center">
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
+                <span className="text-primary">@</span>
+                {selectedChannel.channelName}
+                <button type="button" onClick={() => setSelectedChannel(null)}>
+                  <XIcon className="hover:text-destructive h-3 w-3 cursor-pointer" />
+                </button>
+              </Badge>
+            </div>
+          )}
           <Button
             className="h-4 w-6 cursor-pointer px-6 py-4"
             onClick={handleSavePostClick}
@@ -228,33 +237,6 @@ export default function PostEditorModal() {
           className="hidden"
           ref={fileInputRef}
         />
-
-        {postEditorModal.isOpen && postEditorModal.type === "EDIT" && (
-          <Carousel>
-            <CarouselContent>
-              {existingMediaUrls.map((url) => (
-                <CarouselItem className="basis-1/2 md:basis-1/3" key={url}>
-                  <div className="relative aspect-square">
-                    {isVideo(url) ? (
-                      <video
-                        src={url}
-                        muted
-                        loop
-                        playsInline
-                        className="h-full w-full rounded-sm object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={url}
-                        className="h-full w-full rounded-sm object-cover"
-                      />
-                    )}
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        )}
 
         {/* 새 게시물 작성 시 프리뷰 */}
         {mediaFiles.length > 0 && (
@@ -291,7 +273,7 @@ export default function PostEditorModal() {
           </Carousel>
         )}
 
-        {postEditorModal.isOpen && postEditorModal.type === "CREATE" && (
+        {isOpen && isCreateMode && (
           <>
             <div className="flex justify-between">
               <Button
