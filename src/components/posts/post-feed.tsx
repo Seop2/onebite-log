@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { useEffect, useRef } from "react";
 import { useInfinitePostData } from "@/hooks/queries/use-infinite-post";
 import { toast } from "sonner";
+import ScrollAnimation from "../scroll-animation";
 
 /**
  * 포스트 피드 컴포넌트
@@ -44,7 +45,9 @@ export default function PostFeed({ authorId }: { authorId?: string }) {
     <div className="flex flex-col gap-10">
       {data.pages.map((page) =>
         page.map((postId) => (
-          <PostItem key={postId} postId={postId} type={"FEED"} />
+          <ScrollAnimation>
+            <PostItem key={postId} postId={postId} type={"FEED"} />
+          </ScrollAnimation>
         )),
       )}
       {/* 다음 페이지를 불러오는 중인지 판별 isFetchingNextPage*/}

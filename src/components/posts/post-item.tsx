@@ -13,6 +13,7 @@ import { useCommentCountData } from "@/hooks/queries/use-comment-count-data";
 import { useChannelLive } from "@/hooks/queries/use-posts-channel-live";
 import PostMediaCarousel from "./post-media-carousel";
 import PostChannelTag from "./post-channel-tag";
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 
 interface PostItemProps {
   postId: number;
@@ -39,10 +40,10 @@ export default function PostItem({ postId, type }: PostItemProps) {
   const viewerCount = liveInfo?.concurrentUserCount?.toLocaleString() ?? "0";
 
   return (
-    <div
+    <Card
       className={`flex flex-col gap-4 pb-8 ${type === "FEED" && "border-b"}`}
     >
-      <div className="flex justify-between">
+      <CardHeader className="flex justify-between">
         <div className="item-start flex gap-4">
           <Link to={`/profile/${post.author_id}`}>
             <img
@@ -66,8 +67,8 @@ export default function PostItem({ postId, type }: PostItemProps) {
             </>
           )}
         </div>
-      </div>
-      <div className="flex cursor-pointer flex-col gap-5">
+      </CardHeader>
+      <CardContent className="flex cursor-pointer flex-col gap-5">
         {type === "FEED" ? (
           <Link to={`/post/${post.id}`}>
             <div className="line-clamp-2 whitespace-pre-wrap">
@@ -89,8 +90,8 @@ export default function PostItem({ postId, type }: PostItemProps) {
         {post.media_urls && post.media_urls.length > 0 && (
           <PostMediaCarousel mediaUrls={post.media_urls} type={type} />
         )}
-      </div>
-      <div className="flex gap-2">
+      </CardContent>
+      <CardFooter className="flex gap-2">
         <LikePostButton
           id={post.id}
           likeCount={post.like_count}
@@ -104,7 +105,7 @@ export default function PostItem({ postId, type }: PostItemProps) {
             </div>
           </Link>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
