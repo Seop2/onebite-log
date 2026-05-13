@@ -8,21 +8,32 @@ const PAGE_SIZE = 5;
  * 리액트 쿼리로 무한 스크롤 기능 구현
  * @returns
  */
-export function useInfinitePostData(authorId?: string) {
+export function useInfinitePostData(
+  authorId?: string,
+  sortBy: "created_at" | "like_count" = "created_at",
+  channelId?: string,
+) {
   const session = useSession();
   const userId = session!.user.id;
   const queryClient = useQueryClient();
 
   return useInfiniteQuery({
     queryKey: !authorId
-      ? QUERY_KEYS.post.list
-      : QUERY_KEYS.post.userList(authorId),
+      ? [...QUERY_KEYS.post.list, sortBy, channelId ?? ""]
+      : [...QUERY_KEYS.post.userList(authorId), sortBy, channelId ?? ""],
 
     queryFn: async ({ pageParam }) => {
       const from = pageParam * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      const posts = await fetchPosts({ from, to, userId, authorId });
+      const posts = await fetchPosts({
+        from,
+        to,
+        userId,
+        authorId,
+        sortBy,
+        channelId,
+      });
       //정규화
       posts.forEach((post) => {
         queryClient.setQueryData(QUERY_KEYS.post.byId(post.id), post);

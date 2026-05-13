@@ -2,31 +2,34 @@ import supabase from "@/lib/supabase";
 import { uploadFile, uploadImage } from "./image";
 import type { PostEntity } from "@/types";
 
-/**
- * 데이터 패칭
- * @param param0
- * @returns
- */
 export async function fetchPosts({
   from,
   to,
   userId,
   authorId,
+  sortBy = "created_at",
+  channelId,
 }: {
   from: number;
   to: number;
   userId: string;
   authorId?: string;
+  sortBy?: "created_at" | "like_count";
+  channelId?: string;
 }) {
   const request = supabase
     .from("post")
     .select("*, author: profile!author_id(*), myLiked: like!post_id (*)")
     .eq("like.user_id", userId)
-    .order("created_at", { ascending: false }) //생성일을 기준으로 내림차순
+    .order(sortBy, { ascending: false })
     .range(from, to);
 
   if (authorId) {
     request.eq("author_id", authorId);
+  }
+
+  if (channelId) {
+    request.eq("channel_id", channelId);
   }
 
   const { data, error } = await request;

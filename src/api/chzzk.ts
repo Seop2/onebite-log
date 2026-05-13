@@ -1,5 +1,31 @@
 import supabase from "@/lib/supabase";
 
+export type LiveStreamer = {
+  channelId: string;
+  channelName: string;
+  channelImageUrl: string | null;
+  concurrentUserCount: number;
+  liveTitle: string | null;
+  liveThumbnailUrl: string | null;
+};
+
+export async function fetchTopLiveStreamers(size = 10): Promise<LiveStreamer[]> {
+  const { data, error } = await supabase.functions.invoke("chzzk-top-lives", {
+    body: { size },
+  });
+
+  if (error) throw error;
+
+  return (data?.data ?? []).map((ch: LiveStreamer) => ({
+    channelId: ch.channelId,
+    channelName: ch.channelName,
+    channelImageUrl: ch.channelImageUrl ?? null,
+    concurrentUserCount: ch.concurrentUserCount ?? 0,
+    liveTitle: ch.liveTitle ?? null,
+    liveThumbnailUrl: ch.liveThumbnailUrl ?? null,
+  }));
+}
+
 export type ChzzkChannel = {
   channelId: string;
   channelName: string;

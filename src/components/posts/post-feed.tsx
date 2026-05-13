@@ -12,7 +12,15 @@ import ScrollAnimation from "../scroll-animation";
  * @param param0
  * @returns
  */
-export default function PostFeed({ authorId }: { authorId?: string }) {
+export default function PostFeed({
+  authorId,
+  sortBy = "created_at",
+  channelId,
+}: {
+  authorId?: string;
+  sortBy?: "created_at" | "like_count";
+  channelId?: string;
+}) {
   const {
     data,
     error,
@@ -20,7 +28,7 @@ export default function PostFeed({ authorId }: { authorId?: string }) {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
-  } = useInfinitePostData(authorId);
+  } = useInfinitePostData(authorId, sortBy, channelId);
   const { ref, inView } = useInView();
   const endToastShownRef = useRef(false);
   useEffect(() => {
@@ -45,8 +53,8 @@ export default function PostFeed({ authorId }: { authorId?: string }) {
     <div className="flex flex-col gap-10">
       {data.pages.map((page) =>
         page.map((postId) => (
-          <ScrollAnimation>
-            <PostItem key={postId} postId={postId} type={"FEED"} />
+          <ScrollAnimation key={postId}>
+            <PostItem postId={postId} type={"FEED"} />
           </ScrollAnimation>
         )),
       )}
